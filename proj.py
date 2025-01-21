@@ -231,11 +231,13 @@ def main():
         # if incubators are ready to be infected
 
         #draw the graph every 100 episodes:
+
         if time_current%1000 == 0:
-            print("Current time: " + str(time_current) + " | Healthy: " + str(susceptible_stats[-1]) +
-                  " | Incubating: " + str(incubating_stats[-1]) +
-                  " | Infected: " + str(infected_stats[-1])  +
-                  " | Recovered: " + str(recovered_stats[-1]))
+            if len(sys.argv) < 2:
+                print("Current time: " + str(time_current) + " | Healthy: " + str(susceptible_stats[-1]) +
+                      " | Incubating: " + str(incubating_stats[-1]) +
+                      " | Infected: " + str(infected_stats[-1])  +
+                      " | Recovered: " + str(recovered_stats[-1]))
             nx.draw(G, node_color=color_map, pos=pos)
             filename = "graph" + str(time_current) + ".png"
             plt.savefig(filename)
@@ -256,9 +258,13 @@ def main():
     plt.ylabel('Infections')
     plt.legend()
     plt.xlabel('Time in 20s')
-
-    plt.show()
-
+    if len(sys.argv) > 1:
+        plt.savefig("plot" + str(num_pat) + str(mode) + ".png")
+        with open("infectious_output.txt", "a") as f:
+            f.write(str(infected_stats[-1]) + ";" + str(susceptible_stats[-1])
+                    + ";" + str(incubating_stats[-1]) + ";" + str(recovered_stats[-1]) + "\n")
+    else:
+        plt.show()
 
 if __name__ == '__main__':
     main()
