@@ -3,6 +3,7 @@ import random
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
 
 # formats our timetable, who is meeting whom at what time
 # return list in format: [time, [a,b],[b,c]...]
@@ -111,26 +112,42 @@ def find_maxdeg(g):
     return v
 
 def main():
-
-    print("Network Science Project Infectious - Spreading Sickness")
-    # Parameters:
-    # num_pat: Number of initial Patients
-    # i_rate: infection rate per social interaction
-    # i_rate_small: chance of incubating persons to infect someone
-    # inc_time: How many timesteps(20s) until infected
-    # rec_time: timesteps it takes for recovery to begin - set this larger than 25000 to disable recovery
-    # rec_chance: chance to recover (increases with time after rec_time)
-    # incubating: enable incubate phase or directly infect
-    num_pat = 30
-    i_rate = 1
-    i_rate_small = 0.2
-    inc_time = 10
-    rec_time = 25000
-    rec_chance = 0.1
-    incubating = False
-    # Modes are: rnd, max, first, last
-    mode = 'first'
-
+    if len(sys.argv) < 2:
+        print("Network Science Project Infectious - Spreading Sickness")
+        print("If you want to run the program with args on commandline, please follow the following instructions:")
+        print("Usage: python3 proj.py patients(int) infection rate(float 0-1) incubating infection rate(float 0-1)"
+              + " timesteps from incubating to infected(int) recovery time(int) recovery chance(float 0-1)"
+              +  "incubating active (True or False)+ mode(max, rnd, first, last)")
+        print("Example: python3 proj.py 3 1 0.2 10 500 0.1 False rnd")
+        # Parameters:
+        # num_pat: Number of initial Patients
+        # i_rate: infection rate per social interaction
+        # i_rate_small: chance of incubating persons to infect someone
+        # inc_time: How many timesteps(20s) until infected
+        # rec_time: timesteps it takes for recovery to begin - set this larger than 25000 to disable recovery
+        # rec_chance: chance to recover (increases with time after rec_time)
+        # incubating: enable incubate phase or directly infect
+        num_pat = 30
+        i_rate = 1
+        i_rate_small = 0.2
+        inc_time = 10
+        rec_time = 25000
+        rec_chance = 0.1
+        incubating = False
+        # Modes are: rnd, max, first, last
+        mode = 'first'
+    else:
+        print("Network Science Project Infectious - Spreading Sickness")
+        if len(sys.argv) != 9:
+            print("Error, wrong number of parameters")
+        num_pat = int(sys.argv[1])
+        i_rate = float(sys.argv[2])
+        i_rate_small = float(sys.argv[3])
+        inc_time = float(sys.argv[4])
+        rec_time = float(sys.argv[5])
+        rec_chance = float(sys.argv[6])
+        incubating = bool(sys.argv[7])
+        mode = str(sys.argv[8])
     # ---------------------------------------
     # Setup start:
     infected_stats = []
