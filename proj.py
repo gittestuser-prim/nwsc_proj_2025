@@ -140,7 +140,6 @@ def main():
         # Modes are: rnd, max, first, last
         mode = 'first'
     else:
-        print("Network Science Project Infectious - Spreading Sickness")
         if len(sys.argv) != 9:
             print("Error, wrong number of parameters")
         num_pat = int(sys.argv[1])
