@@ -146,7 +146,10 @@ def main():
         inc_time = float(sys.argv[4])
         rec_time = float(sys.argv[5])
         rec_chance = float(sys.argv[6])
-        incubating = bool(sys.argv[7])
+        if sys.argv[7] == 'True':
+            incubating = True
+        else:
+            incubating = False
         mode = str(sys.argv[8])
     # ---------------------------------------
     # Setup start:
