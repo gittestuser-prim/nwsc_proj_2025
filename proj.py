@@ -97,6 +97,9 @@ def setup(G, time_table, pat, mode):
             else:
                 patients.append(time_table[-idx][1][0])
                 idx += 1
+        else:
+            print("invalid mode")
+            return None
     #print(patients)
     return patients
 
@@ -167,6 +170,9 @@ def main():
     G = nx.from_numpy_array(Aij)
     # avg_degree = find_maxdeg(G)
     patient_zero = setup(G, time_table, num_pat, mode)
+    if patient_zero is None:
+        print("Something went wrong, terminating program")
+        return
     pos = nx.spring_layout(G, k=0.35, iterations=20)
 
     # Set up our infection schema:
