@@ -78,7 +78,7 @@ def setup(G, time_table, pat, mode, n_nodes):
     idx = 0
     if mode == 'max':
         degree_sequence = sorted(G.degree, key=lambda x: x[1], reverse=True)
-        print(degree_sequence)
+        #print(degree_sequence)
     while len(patients) < pat:
         if mode == 'rnd':
             new = random.randint(1,n_nodes)
