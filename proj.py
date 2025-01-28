@@ -73,7 +73,7 @@ def gen_Aij(d):
     return aij
 
 
-def setup(G, time_table, pat, mode, n_nodes):
+def setup(G, time_table, pat, mode, n_nodes, ino):
     patients = []
     idx = 0
     if mode == 'max':
@@ -82,7 +82,7 @@ def setup(G, time_table, pat, mode, n_nodes):
     while len(patients) < pat:
         if mode == 'rnd':
             new = random.randint(1,n_nodes)
-            if not new in patients:
+            if not new in patients and not new in ino:
                 patients.append(new)
         elif mode == 'max':
             patients.append(degree_sequence[idx][0])
@@ -164,8 +164,16 @@ def main():
         else:
             incubating = False
         mode = str(sys.argv[8])
+
+        # Inoculation setup
         tmp = str(sys.argv[9])
         inoculation = []
+        if tmp.isdigit():
+            while len(inoculation) < int(tmp):
+                new = random.randint(1, num_nodes)
+                if not new in inoculation:
+                    inoculation.append(new)
+
         if tmp != []:
             tmp_list = tmp.strip("'[]'").split(',')
             for i in tmp_list:
@@ -177,6 +185,7 @@ def main():
                 while i in inoculation:
                     i = random.randint(1, num_nodes)
         runner = int(sys.argv[10])
+
     # ---------------------------------------
     # Setup start:
     infected_stats = []
@@ -190,7 +199,7 @@ def main():
     attr = []
     time_in_state_logic = []
     # avg_degree = find_maxdeg(G)
-    patient_zero = setup(G, time_table, num_pat, mode, num_nodes)
+    patient_zero = setup(G, time_table, num_pat, mode, num_nodes, inoculation)
     if patient_zero is None:
         print("Something went wrong, terminating program")
         return
