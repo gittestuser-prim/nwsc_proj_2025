@@ -3,7 +3,7 @@ import sys
 
 def main():
     if len(sys.argv) != 2:
-        print("Usage: wrapper.py filename.conf")
+        print("Usage: wrapper.py filename.cfg")
         print("Please see example config File")
     config = []
     with open(sys.argv[1], 'r') as file:
