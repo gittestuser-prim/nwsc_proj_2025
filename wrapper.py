@@ -17,7 +17,7 @@ def main():
         print("Config: " + str(entry))
         subprocess.run(['python3', 'proj.py', str(config[idx][0]), str(config[idx][1]),
                     str(config[idx][2]), str(config[idx][3]), str(config[idx][4]),
-                        str(config[idx][5]), str(config[idx][6]), str(config[idx][7])])
+                        str(config[idx][5]), str(config[idx][6]), str(config[idx][7]), str(config[idx][8]), str(idx+1)])
 
 if __name__ == '__main__':
     main()

@@ -35,6 +35,8 @@ def get_actors(list, time):
 
 # load the file and converts it into a 2d extended adjacency matrix where its either 0 if
 # no connection or the timestamps if there was contact (number of timestamps also indicate how often)
+# data diminesions are currently hardcoded, need to be parsed from file afterwards
+
 def load_data(path):
     f = open(path, "r")
     data = np.zeros((410, 410), dtype=object)
@@ -71,15 +73,15 @@ def gen_Aij(d):
     return aij
 
 
-def setup(G, time_table, pat, mode):
+def setup(G, time_table, pat, mode, n_nodes):
     patients = []
     idx = 0
     if mode == 'max':
         degree_sequence = sorted(G.degree, key=lambda x: x[1], reverse=True)
-        #print(degree_sequence)
+        print(degree_sequence)
     while len(patients) < pat:
         if mode == 'rnd':
-            new = random.randint(1,410)
+            new = random.randint(1,n_nodes)
             if not new in patients:
                 patients.append(new)
         elif mode == 'max':
@@ -115,13 +117,21 @@ def find_maxdeg(g):
     return v
 
 def main():
+
+    # load data:
+    data, time_table = load_data("out.sociopatterns-infectious")
+    Aij = gen_Aij(data)
+    G = nx.from_numpy_array(Aij)
+    num_nodes = G.number_of_nodes()
+
     if len(sys.argv) < 2:
         print("Network Science Project Infectious - Spreading Sickness")
         print("If you want to run the program with args on commandline, please follow the following instructions:")
-        print("Usage: python3 proj.py patients(int) infection rate(float 0-1) incubating infection rate(float 0-1)"
-              + " timesteps from incubating to infected(int) recovery time(int) recovery chance(float 0-1)"
-              +  "incubating active (True or False)+ mode(max, rnd, first, last)")
-        print("Example: python3 proj.py 3 1 0.2 10 500 0.1 False rnd")
+        print("Usage: python3 proj.py patients(int) infection rate(float 0-1) incubating infection rate(float 0-1) "
+              + "timesteps from incubating to infected(int) recovery time(int) recovery chance(float 0-1) "
+              + "incubating active (True or False) mode(max, rnd, first, last) "
+              + "inoculation(list with node numbers or 0 if random node(s))")
+        print("Example: python3 proj.py 3 1 0.2 10 500 0.1 False rnd [0,0]")
         # Parameters:
         # num_pat: Number of initial Patients
         # i_rate: infection rate per social interaction
@@ -137,10 +147,11 @@ def main():
         rec_time = 25000
         rec_chance = 0.1
         incubating = False
+        inoculation = []
         # Modes are: rnd, max, first, last
         mode = 'first'
     else:
-        if len(sys.argv) != 9:
+        if len(sys.argv) != 11:
             print("Error, wrong number of parameters")
         num_pat = int(sys.argv[1])
         i_rate = float(sys.argv[2])
@@ -153,37 +164,53 @@ def main():
         else:
             incubating = False
         mode = str(sys.argv[8])
+        tmp = str(sys.argv[9])
+        inoculation = []
+        if tmp != []:
+            tmp_list = tmp.strip("'[]'").split(',')
+            for i in tmp_list:
+                if i.isdigit():
+                    inoculation.append(int(i))
+        for i in inoculation:
+            if i == 0:
+                i = random.randint(1, num_nodes)
+                while i in inoculation:
+                    i = random.randint(1, num_nodes)
+        runner = int(sys.argv[10])
     # ---------------------------------------
     # Setup start:
     infected_stats = []
     susceptible_stats = []
     incubating_stats = []
     recovered_stats = []
+    inoculated_stats = []
 
     time_stats = []
     color_map = []
     attr = []
     time_in_state_logic = []
-    data, time_table = load_data("out.sociopatterns-infectious")
-    Aij = gen_Aij(data)
-    G = nx.from_numpy_array(Aij)
     # avg_degree = find_maxdeg(G)
-    patient_zero = setup(G, time_table, num_pat, mode)
+    patient_zero = setup(G, time_table, num_pat, mode, num_nodes)
     if patient_zero is None:
         print("Something went wrong, terminating program")
         return
     pos = nx.spring_layout(G, k=0.35, iterations=20)
 
-    # Set up our infection schema:
+    # Set up our infection schema and inoculate people:
+
     for node in G:
         time_in_state_logic.append(0)
         if node in patient_zero:
             attr.append('Infected')
             color_map.append('red')
+        elif node in inoculation:
+            attr.append('Inoculated')
+            color_map.append('violet')
         else:
             attr.append('Susceptible')
             color_map.append('green')
     time_current = 0
+
 
     # -----------------------------------------------
     # Game Start:
@@ -192,7 +219,7 @@ def main():
         # this is only meetings (only infection spread when meeting)
         if happening:
             for encounter in happening:
-                if attr[encounter[1] - 1] == 'Recovered':
+                if attr[encounter[1] - 1] == 'Recovered' or attr[encounter[1] - 1] == 'Inoculated':
                     continue
                 if attr[encounter[0]-1] == 'Infected':
                     if random.random() < i_rate and incubating:
@@ -234,6 +261,7 @@ def main():
         susceptible_stats.append(attr.count('Susceptible'))
         incubating_stats.append(attr.count('Incubating'))
         recovered_stats.append(attr.count('Recovered'))
+        inoculated_stats.append(attr.count('Inoculated'))
 
         time_stats.append(time_current)
         # if incubators are ready to be infected
@@ -263,11 +291,12 @@ def main():
     plt.plot(time_stats, susceptible_stats, lw=1.4, color='green', label='Susceptible')
     plt.plot(time_stats, incubating_stats, lw=1.4, color='orange', label='Incubating')
     plt.plot(time_stats, recovered_stats, lw=1.4, color='blue', label='Recovered')
+    plt.plot(time_stats, inoculated_stats, lw=1.4, color='violet', label='Inoculated')
     plt.ylabel('Infections')
     plt.legend()
     plt.xlabel('Time in 20s')
     if len(sys.argv) > 1:
-        plt.savefig("plot" + str(num_pat) + str(mode) + ".png")
+        plt.savefig("plot" + str(num_pat) + str(mode) + "_" + str(runner) +".png")
         with open("infectious_output.txt", "a") as f:
             f.write(str(infected_stats[-1]) + ";" + str(susceptible_stats[-1])
                     + ";" + str(incubating_stats[-1]) + ";" + str(recovered_stats[-1]) + "\n")
